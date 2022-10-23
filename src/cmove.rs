@@ -32,9 +32,9 @@ impl Move {
         Self { data: data }
     }
 
-    /*pub fn new_from_u32(data: u32) -> Self{
+    pub fn new_from_u32(data: u32) -> Self{
         Self { data: data }
-    }*/
+    }
 
     #[cfg(test)]
     pub fn new_friendly(from_square: Square,        // 0x3f

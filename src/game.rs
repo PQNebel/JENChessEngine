@@ -14,7 +14,9 @@ pub struct Game {
     pub castling_ability: u8,
 
     pub full_moves: u16,
-    pub half_moves: u8
+    pub half_moves: u8,
+
+    pub piece_table: [Piece; 64]
 }
 
 impl Game {
@@ -75,6 +77,7 @@ impl Game {
         let mut white_occupancies = Bitboard::new();
         let mut black_occupancies = Bitboard::new();
         let mut all_occupancies =   Bitboard::new();
+        let mut piece_table =      [Piece::None; 64];
 
         let mut i = 0;
 
@@ -90,7 +93,9 @@ impl Game {
             else if char != '/' {
                 let piece = char_to_piece(char);
                 if piece.is_none() { return None };
-                bitboards[char_to_piece(char).unwrap() as usize].set_bit(i);
+                let piece = char_to_piece(char).unwrap();
+                piece_table[i as usize] = piece;
+                bitboards[piece as usize].set_bit(i);
                 all_occupancies.set_bit(i);
                 if char.is_uppercase() { white_occupancies.set_bit(i) } else { black_occupancies.set_bit(i) };
 
@@ -126,7 +131,9 @@ impl Game {
             enpassant_square: enpassant_sq,
 
             full_moves: full_moves,
-            half_moves: half_moves
+            half_moves: half_moves,
+
+            piece_table: piece_table,
         })
     }
 
@@ -160,6 +167,9 @@ impl Game {
     }
 
     pub fn is_in_check(&self, color: Color) -> bool {
+        if self.get_piece_bitboard(Piece::WhiteKing).least_significant() == 64 {
+            println!("dasdasdasddadas");
+        }
         if color == Color::White {
             self.is_square_attacked(self.get_piece_bitboard(Piece::WhiteKing).least_significant(), Color::Black)
         }

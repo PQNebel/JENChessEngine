@@ -1,0 +1,5 @@
+[build]
+RUSTFLAGS = "-C target-cpu=native"
+
+[env]
+RUST_BACKTRACE = "1"

@@ -30,6 +30,25 @@ pub fn char_to_piece(char: char) -> Option<Piece> {
     }
 }
 
+pub fn piece_from_u8(piece: u8) -> Piece {
+    match piece {
+        0 => Piece::WhitePawn,
+        1 => Piece::WhiteKnight,
+        2 => Piece::WhiteBishop,
+        3 => Piece::WhiteRook,
+        4 => Piece::WhiteQueen,
+        5 => Piece::WhiteKing,
+        6 => Piece::BlackPawn,
+        7 => Piece::BlackKnight,
+        8 => Piece::BlackBishop,
+        9 => Piece::BlackRook,
+        10 => Piece::BlackQueen,
+        11 => Piece::BlackKing,
+        12 => Piece::None,
+        _ => unreachable!()
+    }
+}
+
 #[derive(Debug)]
 #[derive(Clone, Copy)]
 #[derive(PartialEq)]
@@ -46,6 +65,7 @@ pub enum CastlingAbility {
     BlackQueenSide = 8
 }
 
+#[derive(PartialEq)]
 #[derive(Clone, Copy)]
 pub enum Piece {
     WhitePawn   = 0,

@@ -41,41 +41,42 @@ pub fn make_move(game: &mut Game, cmove: &Move) {
                 game.bitboards[Piece::BlackPawn as usize].unset_bit(to_square + 8);
                 game.black_occupancies.unset_bit(to_square + 8);
                 game.all_occupancies.unset_bit(to_square + 8);
+                game.piece_table[(to_square + 8) as usize] = Piece::None;
             }
             else {
                 game.bitboards[Piece::WhitePawn as usize].unset_bit(to_square - 8);
                 game.white_occupancies.unset_bit(to_square - 8);
                 game.all_occupancies.unset_bit(to_square - 8);
+                game.piece_table[(to_square - 8) as usize] = Piece::None;
             }
         } else {
-            let start;
-            let end;
+            //Regular capture
+            let captured = game.piece_table[to_square as usize];
+            
+            game.bitboards[captured as usize].unset_bit(to_square);
+
             if game.active_player == Color::White {
-                start = Piece::BlackPawn as usize;
-                end = Piece::BlackKing as usize;
-                game.black_occupancies.unset_bit(to_square);
+                game.black_occupancies.unset_bit(to_square)
             }
             else {
-                start = Piece::WhitePawn as usize;
-                end = Piece::WhiteKing as usize;
-                game.white_occupancies.unset_bit(to_square);
-            }
-
-            for bb in start..end {
-                if game.bitboards[bb].get_bit(to_square) {
-                    game.bitboards[bb].unset_bit(to_square);
-                    break;
-                }
+                game.white_occupancies.unset_bit(to_square)
             }
         }
         //Reset half moves
         game.half_moves = 0;
     }
 
+    //Update piece table
+    game.piece_table[from_square as usize] = Piece::None;
+    game.piece_table[to_square as usize] = piece_from_u8(piece);
+
     //Promotions
     if promotion != Piece::None as u8 {
         //Spawn promoted
         game.bitboards[promotion as usize].set_bit(to_square);
+
+        //Set piece table entry
+        game.piece_table[to_square as usize] = piece_from_u8(promotion);
 
         //Remove pawn
         game.bitboards[piece as usize].unset_bit(to_square);
@@ -91,6 +92,10 @@ pub fn make_move(game: &mut Game, cmove: &Move) {
                 game.white_occupancies.unset_bit_sq(Square::h1);
                 game.all_occupancies.set_bit_sq(Square::f1);
                 game.all_occupancies.unset_bit_sq(Square::h1);
+
+                //Uppdate piece table
+                game.piece_table[Square::f1 as usize] = Piece::WhiteRook;
+                game.piece_table[Square::h1 as usize] = Piece::None;
             }
             58 => { //White queenside
                 game.bitboards[Piece::WhiteRook as usize].set_bit_sq(Square::d1);
@@ -99,6 +104,10 @@ pub fn make_move(game: &mut Game, cmove: &Move) {
                 game.white_occupancies.unset_bit_sq(Square::a1);
                 game.all_occupancies.set_bit_sq(Square::d1);
                 game.all_occupancies.unset_bit_sq(Square::a1);
+
+                //Uppdate piece table
+                game.piece_table[Square::d1 as usize] = Piece::WhiteRook;
+                game.piece_table[Square::a1 as usize] = Piece::None;
             }
             6 => { //Black kingside
                 game.bitboards[Piece::BlackRook as usize].set_bit_sq(Square::f8);
@@ -107,6 +116,10 @@ pub fn make_move(game: &mut Game, cmove: &Move) {
                 game.black_occupancies.unset_bit_sq(Square::h8);
                 game.all_occupancies.set_bit_sq(Square::f8);
                 game.all_occupancies.unset_bit_sq(Square::h8);
+
+                //Uppdate piece table
+                game.piece_table[Square::f8 as usize] = Piece::BlackRook;
+                game.piece_table[Square::h8 as usize] = Piece::None;
             }
             2 => { //Black queenside
                 game.bitboards[Piece::BlackRook as usize].set_bit_sq(Square::d8);
@@ -115,6 +128,10 @@ pub fn make_move(game: &mut Game, cmove: &Move) {
                 game.black_occupancies.unset_bit_sq(Square::a8);
                 game.all_occupancies.set_bit_sq(Square::d8);
                 game.all_occupancies.unset_bit_sq(Square::a8);
+
+                //Uppdate piece table
+                game.piece_table[Square::d8 as usize] = Piece::BlackRook;
+                game.piece_table[Square::a8 as usize] = Piece::None;
             }
             _ => unreachable!()
         }

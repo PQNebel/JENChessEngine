@@ -61,7 +61,7 @@ fn main() {
                                 panic!("Illegal move");
                             }
                             else {
-                                make_move(&mut game, &parsed.unwrap())
+                                make_irreversible_move(&mut game, &parsed.unwrap())
                             }
                         }
                     }

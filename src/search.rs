@@ -7,7 +7,7 @@ const FULL_DEPTH_MOVES: u8 = 4;
 const REDUCTION_LIMIT: u8 = 3;
 
 pub fn search_random(game: &mut Game) -> SearchResult {
-    let moves = generate_moves(&mut *game);
+    let moves = generate_moves(game);
     let rand = rand::thread_rng().gen_range(0..moves.len());
     SearchResult::new(moves.get(rand).clone(), 0, 0, 0)
 }
@@ -107,6 +107,7 @@ fn negamax(game: &mut Game, depth: u8, alpha: i32, beta: i32, envir: &mut Search
         enable_pv_scoring(&moves, envir)
     }
 
+    //Sort moves
     moves.sort_moves(game, envir);
 
     //Mate & Draw
@@ -121,16 +122,16 @@ fn negamax(game: &mut Game, depth: u8, alpha: i32, beta: i32, envir: &mut Search
 
     for i in 0..moves.len() {
         let m = moves.get(i);
-        
-        let mut copy = game.clone();
-        make_move(&mut copy, m);
 
         envir.ply += 1;
 
+        make_move(game, m, envir);
+
+        //Search
         let mut score;
         if moves_searched == 0 {
             //Full PV Search
-            score = -negamax(&mut copy, n_depth - 1, -beta, -alpha, envir);
+            score = -negamax(game, n_depth - 1, -beta, -alpha, envir);
         } else {
             //Regular search with LMR
 
@@ -140,7 +141,7 @@ fn negamax(game: &mut Game, depth: u8, alpha: i32, beta: i32, envir: &mut Search
                         !m.is_capture() &&
                         !m.promotion() != Piece::None as u8 {
                 //Reduced search
-                -negamax(&mut copy, n_depth - 2, -temp_alpha - 1, -temp_alpha, envir)
+                -negamax(game, n_depth - 2, -temp_alpha - 1, -temp_alpha, envir)
 
             } else {
                 //Ensure a full search
@@ -149,15 +150,17 @@ fn negamax(game: &mut Game, depth: u8, alpha: i32, beta: i32, envir: &mut Search
 
             if score > temp_alpha {
                 //LMR
-                score = -negamax(&mut copy, n_depth - 1, -temp_alpha - 1, -temp_alpha, envir);
+                score = -negamax(game, n_depth - 1, -temp_alpha - 1, -temp_alpha, envir);
 
                 //Check bounds
                 if score > temp_alpha && score < beta {
                     //Full search on failure
-                    score = -negamax(&mut copy, n_depth - 1, -beta, -temp_alpha, envir);
+                    score = -negamax(game, n_depth - 1, -beta, -temp_alpha, envir);
                 }
             }
         }
+
+        make_move(game, m, envir);
 
         envir.ply -= 1;
 
@@ -214,12 +217,13 @@ fn quiescence(game: &mut Game, alpha: i32, beta: i32, envir: &mut SearchEnv) -> 
             continue;
         }
 
-        let mut copy = game.clone();
-        make_move(&mut copy, m);
-        
         envir.ply += 1;
 
-        let score = -quiescence(&mut copy, -beta, -temp_alpha, envir);
+        make_move(game, m, envir);
+
+        let score = -quiescence(game, -beta, -temp_alpha, envir);
+
+        unmake_move(game, m, envir);
 
         envir.ply -= 1;
 
@@ -290,6 +294,7 @@ pub struct SearchEnv {
     pub pv_table: [[Move; MAX_PLY]; MAX_PLY],
     pub follow_pv: bool,
     pub score_pv: bool,
+    pub unmake_list: [Option<UnmakeFrame>; MAX_PLY],
 }
 
 impl SearchEnv {
@@ -303,6 +308,7 @@ impl SearchEnv {
             pv_table: [[NULL_MOVE; 64]; 64],
             follow_pv: false,
             score_pv: false,
+            unmake_list: [None; MAX_PLY]
         }
     }
 
@@ -316,6 +322,14 @@ impl SearchEnv {
         }
 
         self.pv_lengths[ply] = self.pv_lengths[ply + 1];
+    }
+
+    pub fn push_to_unmake_stack(&mut self, unmake_frame: UnmakeFrame) {
+        self.unmake_list[self.ply as usize] = Some(unmake_frame);
+    }
+
+    pub fn pop_from_unmake_stack(&mut self) -> UnmakeFrame {
+        self.unmake_list[self.ply as usize].expect("No UnmakeFrame for this ply")
     }
 }
 

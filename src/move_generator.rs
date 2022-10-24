@@ -417,13 +417,13 @@ mod move_gen_tests {
     pub fn perft_test () {
         let mut game = Game::new_from_start_pos();
         let mut moves = generate_moves(&mut game).values();
-        make_move(&mut game, moves.iter().find(|m| m.from_square() == Square::a2 as u8 && m.to_square() == Square::a3 as u8 ).unwrap());
+        make_irreversible_move(&mut game, moves.iter().find(|m| m.from_square() == Square::a2 as u8 && m.to_square() == Square::a3 as u8 ).unwrap());
         moves = generate_moves(&mut game).values();
-        make_move(&mut game, moves.iter().find(|m| m.from_square() == Square::d7 as u8 && m.to_square() == Square::d6 as u8 ).unwrap());
+        make_irreversible_move(&mut game, moves.iter().find(|m| m.from_square() == Square::d7 as u8 && m.to_square() == Square::d6 as u8 ).unwrap());
         moves = generate_moves(&mut game).values();
-        make_move(&mut game, moves.iter().find(|m| m.from_square() == Square::b2 as u8 && m.to_square() == Square::b3 as u8 ).unwrap());
+        make_irreversible_move(&mut game, moves.iter().find(|m| m.from_square() == Square::b2 as u8 && m.to_square() == Square::b3 as u8 ).unwrap());
         moves = generate_moves(&mut game).values();
-        make_move(&mut game, moves.iter().find(|m| m.from_square() == Square::c8 as u8 && m.to_square() == Square::h3 as u8 ).unwrap());
+        make_irreversible_move(&mut game, moves.iter().find(|m| m.from_square() == Square::c8 as u8 && m.to_square() == Square::h3 as u8 ).unwrap());
         generate_moves(&mut game).print();
         let pe = perft(&mut game, 1, true);
         game.all_occupancies.print();

@@ -113,3 +113,22 @@ impl Move {
         println!()
     }
 }
+
+#[derive(Copy, Clone)]
+pub struct UnmakeFrame<> {
+    pub castling_ability_before: u8,
+    pub enpassant_square_before: Square,
+    pub half_moves_before: u8,
+    pub captured: Piece
+}
+
+impl UnmakeFrame {
+    pub fn new(castling_ability_before: u8, enpassant_square_before: Square, half_moves_before: u8, captured: Piece) -> Self {
+        Self {
+            castling_ability_before: castling_ability_before,
+            enpassant_square_before: enpassant_square_before,
+            half_moves_before: half_moves_before,
+            captured: captured
+        }
+    }
+}
